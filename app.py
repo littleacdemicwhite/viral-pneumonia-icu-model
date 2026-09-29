@@ -103,6 +103,16 @@ GROUPS = [
                                         "ptt_max", "charlson_comorbidity_index"]),
 ]
 
+# Example patient for the ?demo=1 view (intermediate-risk case, ~33% predicted
+# mortality). Normal visitors are unaffected; only used for demos/screenshots.
+DEMO = {
+    'apsiii': 65, 'resp_rate_min': 22.0, 'charlson_comorbidity_index': 3,
+    'bilirubin_total_min': 1.3, 'admission_age': 70, 'aado2_calc_min': 180.0,
+    'height': 170.0, 'wbc_max': 12.0, 'dbp_max': 75.0,
+    'pao2fio2ratio_min': 240.0, 'ptt_max': 40.0,
+}
+demo_mode = st.query_params.get("demo") == "1"
+
 with st.sidebar:
     st.markdown("### 🧾 Patient parameters")
     values = {}
@@ -111,8 +121,10 @@ with st.sidebar:
         for f in feats:
             label, lo, hi, default = INPUTS[f]
             values[f] = st.number_input(label, min_value=lo, max_value=hi,
-                                        value=default, key=f)
-    predict = st.button("Predict 30-day mortality risk", type="primary")
+                                        value=(DEMO[f] if demo_mode else default),
+                                        key=f)
+    predict = (st.button("Predict 30-day mortality risk", type="primary")
+               or demo_mode)
 
 missing = [f for f in feature_names if f not in values]
 if missing:
